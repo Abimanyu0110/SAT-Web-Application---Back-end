@@ -180,7 +180,8 @@ adminController.login = asyncHandler(async (req, res) => {
     } catch (err) {
         console.error(err);
         responseCode = 409;
-        responseMessage = "Something Went Wrong";
+        // responseMessage = "Something Went Wrong";
+        responseMessage = err;
     }
 
     return res.json({
