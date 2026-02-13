@@ -72,13 +72,3 @@ CREATE TABLE attendance (
     CONSTRAINT fk_attendance_markedBy
         FOREIGN KEY (markedBy) REFERENCES admins(id)
 );
-
-SELECT * FROM admins;
-SELECT * FROM students;
-SELECT * FROM attendance;
-
-TRUNCATE TABLE admins;
-
-DROP TABLE admins;
-DROP TABLE students;
-DROP TABLE attendance;

@@ -62,7 +62,7 @@ adminController.manageSignup = asyncHandler(async (req, res) => {
             responseMessage = "Email already exists";
         } else {
             responseCode = 400;
-            responseMessage = "Failed to Sign Up";
+            responseMessage = err;
         }
     }
     return res.json({

@@ -105,3 +105,8 @@ PRODUCT-MANAGEMENT-SYSTEM
 |--- MySQL_Script_PMS.sql - Contains SQL Scripts
 |--- package.json
 |--- README.md
+
+
+DB run locally
+
+mysql -u root -p your_db_name < database/schema.sql
