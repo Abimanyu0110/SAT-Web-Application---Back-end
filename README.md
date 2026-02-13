@@ -7,6 +7,19 @@ Step 1: Required things before run application
 1. node js 20 LTS
 2. mysql 8.0
 
+## Environment Setup
+
+1. Create a `.env` file in the root directory
+2. Add the following variables:
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=database_name
+DB_PORT=3306
+PORT=8080
+JWT_SECRET=create your own key
+
 Step 2: Install Dependencies
 
 -> open terminal and inside the root folder run the below command
