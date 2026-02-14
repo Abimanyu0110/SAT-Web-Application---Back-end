@@ -302,7 +302,7 @@ adminController.getTeacherDashboard = asyncHandler(async (req, res) => {
             INNER JOIN admins AA 
                 ON AA.id = A.adminId
             WHERE A.id = ?
-            GROUP BY A.class, A.section;`,
+            GROUP BY A.class, A.section, AA.organizationName, AA.organizationCode;`,
             [id]
         );
 
@@ -360,7 +360,7 @@ adminController.getAdminDashboard = asyncHandler(async (req, res) => {
                 SUM(CASE WHEN AD.status = 1 THEN 1 ELSE 0 END) AS todayPresent,
                 SUM(CASE WHEN AD.status = 0 THEN 1 ELSE 0 END) AS todayAbsent
             FROM admins A
-            INNER JOIN admins T
+            LEFT JOIN admins T
                 ON T.adminId = A.id
             LEFT JOIN students S
                 ON T.class = S.class

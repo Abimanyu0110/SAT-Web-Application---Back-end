@@ -34,17 +34,19 @@ CREATE TABLE students (
     firstName VARCHAR(50) NOT NULL,
     lastName VARCHAR(50) NOT NULL,
     dob DATE NULL,
-    registerNumber INT NULL UNIQUE,
+    registerNumber INT NOT NULL,
     gender VARCHAR(20) NOT NULL,
     
-    class INT NULL,
-	section VARCHAR(5) NULL,
+    class INT NOT NULL,
+	section VARCHAR(5) NOT NULL,
       
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     
     adminId INT NOT NULL,
     
+    CONSTRAINT uq_attendance UNIQUE (registerNumber, adminId),
+
     CONSTRAINT fk_students_adminId
         FOREIGN KEY (adminId) REFERENCES admins(id)
 );
