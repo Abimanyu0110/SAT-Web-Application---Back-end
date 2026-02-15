@@ -1,23 +1,21 @@
 import asyncHandler from "express-async-handler";
-import bcrypt from "bcrypt";
 
 // -------- Database Connection file ------------
 import db from "../Config/db.js";
 
-// -------- Utils ---------------------
-import { generateAccessToken } from "../utils/tokenUtil.js";
-
 const attendanceController = {};
 
-// ------------ Add / Edit Attendance - API ---------------------
+// ------------ Add / Edit Attendance ---------------------
 attendanceController.manageAttendance = asyncHandler(async (req, res) => {
     let responseCode = 200;
     let responseMessage = "Attendance saved successfully";
     let responseData = [];
 
     try {
+        // input params
         const { date, markedBy, attendance } = req.body;
 
+        // Checks date, markedBy and attendance
         if (!date || !markedBy || !Array.isArray(attendance)) {
             return res.json({
                 code: 400,
@@ -34,6 +32,7 @@ attendanceController.manageAttendance = asyncHandler(async (req, res) => {
             item.isPresent ? 1 : 0
         ]);
 
+        // Insert Query
         const sql = `
             INSERT INTO attendance (date, studentId, markedBy, status)
             VALUES ?
@@ -42,11 +41,10 @@ attendanceController.manageAttendance = asyncHandler(async (req, res) => {
                 markedBy = VALUES(markedBy)
         `;
 
+        // Query Execute
         await db.query(sql, [values]);
 
     } catch (err) {
-        console.error(err);
-
         responseCode = 500;
         responseMessage = "Failed to save attendance";
     }
@@ -58,14 +56,32 @@ attendanceController.manageAttendance = asyncHandler(async (req, res) => {
     });
 });
 
-// --------- Get Attendance List By Date - API -------------------------
+// --------- Get Attendance List By Date -------------------------
 attendanceController.getAttendanceListByDate = asyncHandler(async (req, res) => {
     let responseCode = 200,
         responseMessage = "Success",
         responseData = {};
-    try {
-        const { id, skip, limit } = req.body;
 
+    try {
+        // input params
+        const id = Number(req.query.id);
+        const limit = Number(req.query.limit) || 10;
+        const skip = Number(req.query.skip) || 0;
+        const search = req.query.search;
+
+        // Convert front-end date to DB format for Search
+        // Front-end: DD-MM-YYYY
+        // DB: YYYY-MM-DD
+        let dbDate;
+        if (search && search.trim() !== '') {
+            const [day, month, year] = search.split('-');
+            dbDate = `${year}-${month}-${day}`;
+        }
+
+        let dateSearchSql = dbDate ? ` AND date = ? ` : '';
+        const params = dbDate ? [id, dbDate, limit, skip] : [id, limit, skip];
+
+        // List Query
         const [result] = await db.query(`
            SELECT 
                 date,
@@ -74,22 +90,27 @@ attendanceController.getAttendanceListByDate = asyncHandler(async (req, res) => 
                 SUM(status = 0) AS totalAbsent
             FROM attendance
             WHERE markedBy = ?
+            ${dateSearchSql}
             GROUP BY date
             ORDER BY date DESC
             LIMIT ? OFFSET ?`,
-            [id, limit, skip]
-        ); // All Attendance Record By Date
+            params
+        );
 
+        // Count Query
+        const countParams = dbDate ? [id, dbDate] : [id];
         const [countResult] = await db.query(`
             SELECT COUNT(DISTINCT date) AS total 
             FROM attendance
-            WHERE markedBy = ?`,
-            [id]
-        ); // Total Attendance for that date
+            WHERE markedBy = ?
+            ${dateSearchSql}`,
+            countParams
+        );
 
+        // Response
         if (result.length === 0) {
             responseCode = 400;
-            responseMessage = "No Products Found!";
+            responseMessage = "No Records Found!";
             responseData.data = [];
             responseData.count = 0;
         } else {
@@ -103,6 +124,7 @@ attendanceController.getAttendanceListByDate = asyncHandler(async (req, res) => 
         responseMessage = "Something Went Wrong";
         responseData = {};
     }
+
     return res.json({
         code: responseCode,
         message: responseMessage,
@@ -110,14 +132,16 @@ attendanceController.getAttendanceListByDate = asyncHandler(async (req, res) => 
     });
 });
 
-// --------- Get Attendance Data By Date - API -------------------------
+// --------- Get Single Attendance Data By Date - API -------------------------
 attendanceController.getAttendanceDataByDate = asyncHandler(async (req, res) => {
     let responseCode = 200,
         responseMessage = "Success",
         responseData = {};
     try {
-        const { date, id } = req.body;
+        // input params
+        const { date, id } = req.query;
 
+        // QUERY
         const [result] = await db.query(`
            SELECT 
                 A.studentId,
@@ -130,8 +154,9 @@ attendanceController.getAttendanceDataByDate = asyncHandler(async (req, res) => 
             WHERE A.markedBy = ?
             AND A.DATE = ? `,
             [id, date]
-        ); // All Attendance Datas By Date
+        );
 
+        // RESPONSE
         if (result.length === 0) {
             responseCode = 400;
             responseMessage = "No Products Found!";

@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS `studentAttendanceTracker`;
+
+USE studentAttendanceTracker;
+
 CREATE TABLE admins (
 	id INT PRIMARY KEY AUTO_INCREMENT,
     firstName VARCHAR(50) NOT NULL,

@@ -5,8 +5,7 @@ const adminServices = {};
 
 adminServices.adminSignup = [
     auth.authorize({
-        auth: { required: false },
-        // access: ["ADMIN", "TEACHER"],
+        auth: { required: false }
     }),
     adminController.manageSignup,
 ];
@@ -21,8 +20,7 @@ adminServices.teacherSignup = [
 
 adminServices.login = [
     auth.authorize({
-        auth: { required: false },
-        // access: ["ADMIN", "TEACHER"],
+        auth: { required: false }
     }),
     adminController.login,
 ];
@@ -65,6 +63,14 @@ adminServices.getAttendanceReport = [
         access: ["ADMIN", "TEACHER"],
     }),
     adminController.getAttendanceReport,
+]
+
+adminServices.deleteDataById = [
+    auth.authorize({
+        auth: { required: true },
+        access: ["ADMIN"],
+    }),
+    adminController.deleteDataById,
 ]
 
 export default adminServices;

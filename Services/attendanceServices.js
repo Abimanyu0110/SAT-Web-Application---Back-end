@@ -11,22 +11,6 @@ attendanceServices.manageAttendance = [
     attendanceController.manageAttendance,
 ];
 
-// attendanceServices.teacherSignup = [
-//     auth.authorize({
-//         auth: { required: true },
-//         access: ["ADMIN"],
-//     }),
-//     adminController.manageSignup,
-// ];
-
-// attendanceServices.login = [
-//     auth.authorize({
-//         auth: { required: false },
-//         // access: ["ADMIN", "TEACHER"],
-//     }),
-//     adminController.login,
-// ];
-
 attendanceServices.getAttendanceListByDate = [
     auth.authorize({
         auth: { required: true },

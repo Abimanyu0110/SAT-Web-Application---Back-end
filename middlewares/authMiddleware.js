@@ -1,6 +1,6 @@
 import { verifyAccessToken } from "../utils/tokenUtil.js";
 
-// -------- Database Connection file ------------
+// Database Connection file
 import db from "../Config/db.js";
 
 const authorize = (config) => {

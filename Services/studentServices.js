@@ -27,12 +27,4 @@ studentServices.getStudentDataById = [
     studentController.getStudentDataById,
 ];
 
-// studentServices.login = [
-//     auth.authorize({
-//         auth: { required: false },
-//         // access: ["ADMIN", "TEACHER"],
-//     }),
-//     adminController.login,
-// ];
-
 export default studentServices;

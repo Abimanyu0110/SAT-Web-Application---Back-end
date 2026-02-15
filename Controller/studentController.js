@@ -1,27 +1,26 @@
 import asyncHandler from "express-async-handler";
-import bcrypt from "bcrypt";
 
-// -------- Database Connection file ------------
+// Database Connection file 
 import db from "../Config/db.js";
-
-// -------- Utils ---------------------
-import { generateAccessToken } from "../utils/tokenUtil.js";
 
 const studentController = {};
 
-// ------------ Add / Edit Student - API ---------------------
+// ------------ Add / Edit Student ---------------------
 studentController.manageStudent = asyncHandler(async (req, res) => {
     let responseCode = 200,
         responseMessage = "Successfully Added!",
         responseData = [];
     try {
+        // input params
         const {
             id, firstName, lastName, dob, gender, registerNumber, teacherClass,
             section, adminId
-        } = req.body; // input params
+        } = req.body;
 
-        let result = [] // for query
-        // If id came means it is already created record, so it is for UPDATE
+        // for query
+        let result = []
+
+        // If id is present, it means the record is already created, so this is for update
         if (id && id.length > 0) {
             [result] = await db.query(
                 `UPDATE students
@@ -37,7 +36,7 @@ studentController.manageStudent = asyncHandler(async (req, res) => {
             );
             responseMessage = "Edited Successfully";
         }
-        // If no id means it is new data, so it is for INSERT
+        // If no id, it means this is new data, so insert it
         else {
             [result] = await db.query(
                 `INSERT INTO students (firstName, lastName, dob, gender, registerNumber, 
@@ -48,8 +47,8 @@ studentController.manageStudent = asyncHandler(async (req, res) => {
         }
 
     } catch (err) {
-        console.error(err);
-        if (err.code === 'ER_DUP_ENTRY') { // Duplicate Entry Check, Because Email column is Unique
+        // Duplicate Entry Check, Because AdminId + Register Number columns is Unique
+        if (err.code === 'ER_DUP_ENTRY') {
             responseCode = 409;
             responseMessage = "Register Number already exists";
         } else {
@@ -64,37 +63,82 @@ studentController.manageStudent = asyncHandler(async (req, res) => {
     });
 });
 
-// --------- Get Students List - API -------------------------
+// --------- Get Students List -------------------------
 studentController.getStudentsList = asyncHandler(async (req, res) => {
     let responseCode = 200,
         responseMessage = "Success",
         responseData = {};
 
     try {
-        const { id, role, limit, skip } = req.body;
+        // input params
+        const { id, role, limit, skip, search } = req.query;
 
         let result;
         let countResult;
 
-        // check if pagination is required
         const isPaginated =
             Number.isInteger(limit) &&
             Number.isInteger(skip) &&
             limit > 0 &&
             skip >= 0;
 
-        /* =======================
-           ADMIN QUERY
-        ======================== */
+        const hasSearch = search && search.trim() !== "";
+        const searchValue = `%${search}%`;
+        const genderSearchValue = `${search}%`;
+
+        // For ADMIN
         if (role === "ADMIN") {
+            // List Query
             let sql = `
-        SELECT *
-        FROM students
-        WHERE adminId = ?
-        ORDER BY registerNumber
-      `;
-
+                SELECT *
+                FROM students
+                WHERE adminId = ?
+            `;
+            // Count Query
+            let countSql = `
+                SELECT COUNT(*) AS total
+                FROM students
+                WHERE adminId = ?
+            `;
+            // Pass params for list and Count
             const params = [id];
+            const countParams = [id];
+
+            // Checks Search
+            if (hasSearch) {
+                const searchCondition = `
+                    AND (
+                        LOWER(firstName) LIKE LOWER(?)
+                        OR LOWER(registerNumber) LIKE LOWER(?)
+                        OR \`class\` LIKE ?
+                        OR LOWER(section) LIKE (?)
+                        OR LOWER(gender) LIKE (?)
+                    )
+                `;
+
+                sql += searchCondition;
+                countSql += searchCondition;
+
+                // search params to List
+                params.push(
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    genderSearchValue
+                );
+
+                // search params to Count
+                countParams.push(
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    genderSearchValue
+                );
+            }
+
+            sql += ` ORDER BY registerNumber`;
 
             if (isPaginated) {
                 sql += ` LIMIT ? OFFSET ?`;
@@ -102,32 +146,67 @@ studentController.getStudentsList = asyncHandler(async (req, res) => {
             }
 
             [result] = await db.query(sql, params);
-
-            [countResult] = await db.query(
-                `
-        SELECT COUNT(*) AS total
-        FROM students
-        WHERE adminId = ?
-        `,
-                [id]
-            );
+            [countResult] = await db.query(countSql, countParams);
         }
 
-        /* =======================
-           TEACHER QUERY
-        ======================== */
+        // For TEACHER
         else {
+            // List Query
             let sql = `
-        SELECT S.*
-        FROM students S
-        INNER JOIN admins A
-          ON A.\`class\` = S.\`class\`
-         AND A.section = S.section
-        WHERE A.id = ?
-        ORDER BY S.registerNumber
-      `;
+                SELECT S.*
+                FROM students S
+                INNER JOIN admins A
+                    ON A.\`class\` = S.\`class\`
+                   AND A.section = S.section
+                WHERE A.id = ?
+            `;
+            // Count Query
+            let countSql = `
+                SELECT COUNT(*) AS total
+                FROM students S
+                INNER JOIN admins A
+                    ON A.\`class\` = S.\`class\`
+                   AND A.section = S.section
+                WHERE A.id = ?
+            `;
 
+            // passing params to List and Count
             const params = [id];
+            const countParams = [id];
+
+            // Checks search
+            if (hasSearch) {
+                const searchCondition = `
+                    AND (
+                        LOWER(S.firstName) LIKE LOWER(?)
+                        OR LOWER(S.registerNumber) LIKE LOWER(?)
+                        OR S.\`class\` LIKE ?
+                        OR LOWER(S.section) LIKE LOWER(?)
+                        OR LOWER(S.gender) LIKE LOWER(?)
+                    )
+                `;
+
+                sql += searchCondition;
+                countSql += searchCondition;
+
+                params.push(
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    genderSearchValue
+                );
+
+                countParams.push(
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    searchValue,
+                    genderSearchValue
+                );
+            }
+
+            sql += ` ORDER BY S.registerNumber`;
 
             if (isPaginated) {
                 sql += ` LIMIT ? OFFSET ?`;
@@ -135,23 +214,10 @@ studentController.getStudentsList = asyncHandler(async (req, res) => {
             }
 
             [result] = await db.query(sql, params);
-
-            [countResult] = await db.query(
-                `
-        SELECT COUNT(*) AS total
-        FROM students S
-        INNER JOIN admins A
-          ON A.\`class\` = S.\`class\`
-         AND A.section = S.section
-        WHERE A.id = ?
-        `,
-                [id]
-            );
+            [countResult] = await db.query(countSql, countParams);
         }
 
-        /* =======================
-           RESPONSE
-        ======================== */
+        // RESPONSE
         responseData = {
             data: result,
             count: countResult[0].total
@@ -181,8 +247,10 @@ studentController.getStudentDataById = asyncHandler(async (req, res) => {
         responseMessage = "Success",
         responseData = {};
     try {
-        const { id } = req.body;
+        // Input params
+        const { id } = req.query;
 
+        // Query
         const [result] = await db.query(`
            SELECT 
                 S.id,
@@ -200,6 +268,7 @@ studentController.getStudentDataById = asyncHandler(async (req, res) => {
             [id]
         );
 
+        // Response
         if (result.length === 0) {
             responseCode = 400;
             responseMessage = "No Record Found!";
