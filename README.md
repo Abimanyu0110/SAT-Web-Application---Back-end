@@ -1,15 +1,16 @@
 ## Setup and Run Instructions
 
-# Step 1: Required things
+# Step 1: Prerequisites
 
-1. node js 20 LTS
-2. mysql 8.0
+1. Install Node.js v20 LTS.
+2. Install MySQL v8.0.
 
-# Step 2: DB Creation and Table Creation
+# Step 2: Database Creation
 
--> In the Root Folder there is a database/schema.sql file.
--> Open that file in your local mysql and run those queries to create Database and Tables.
--> Once everything is created. Now Your DB creation is finsihed.
+1. In the root folder, locate the file `database/schema.sql`.
+2. Open this file in your local MySQL server.
+3. Run all the queries in the file to create the database and tables.
+4. Once the queries execute successfully, the database setup is complete.
 
 # Step 3: Environment Setup
 
@@ -24,20 +25,22 @@ DB_PASSWORD=your_password
 DB_NAME=studentAttendanceTracker
 DB_PORT=your_port
 
-## Step 4:
+4. Replace the placeholder values with your actual database credentials.
 
--> Make sure you're in the root folder or else use cd to get into root folder.
--> Next run this command in the terminal --> npm i --force
--> The above command will install the necessary node modules.
+## Step 4: Install Dependencies
+
+1. Make sure you are in the root folder. If not, navigate to it using cd.
+2. Run the following command in the terminal:
+3. `npm install --force`
+4. This command will install all the required Node.js dependencies.
 
 ## Step 5: Start Project
 
--> In the terminal, run the below command
--> node app.js
--> This will start the project.
--> If `Server Port 8080` shown in terminal, The project successfully Running.
+1. In the terminal, run the following command:
+2. `node app.js`
+3. If `Server Port 8080` is displayed in the terminal, the project is running successfully.
 
-## Step 6: Move to Front end
+## Step 6: Frontend Setup
  
- -> Now open fron end project and follow the instructions to setup and run.
- -> The front end instructions were given in the README.md file.
+ 1. Open the frontend project.
+ 2. Follow the setup and run instructions provided in its README.md file.
