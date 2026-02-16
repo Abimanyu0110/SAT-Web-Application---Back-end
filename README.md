@@ -1,18 +1,18 @@
-## Setup and Run Instructions
+# Setup and Run Instructions
 
-# Step 1: Prerequisites
+## Step 1: Prerequisites
 
 1. Install Node.js v20 LTS.
 2. Install MySQL v8.0.
 
-# Step 2: Database Creation
+## Step 2: Database Creation
 
 1. In the root folder, locate the file `database/schema.sql`.
 2. Open this file in your local MySQL server.
 3. Run all the queries in the file to create the database and tables.
 4. Once the queries execute successfully, the database setup is complete.
 
-# Step 3: Environment Setup
+## Step 3: Environment Setup
 
 1. Create a `.env` file in the root directory
 2. Add the following variables:
