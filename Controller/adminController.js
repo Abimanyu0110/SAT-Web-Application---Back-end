@@ -449,7 +449,7 @@ adminController.getAdminDashboard = asyncHandler(async (req, res) => {
            SELECT 
                 AD.date,
                 AD.markedBy,
-                CONCAT(T.firstName,' ',T.lastName) AS teacher,
+                CONCAT(T.firstName, ' ', T.lastName) AS teacher,
                 T.class,
                 T.section,
                 COUNT(*) AS totalStudents,
@@ -457,8 +457,11 @@ adminController.getAdminDashboard = asyncHandler(async (req, res) => {
                 SUM(AD.status = 0) AS totalAbsent
             FROM attendance AD
             LEFT JOIN admins T ON T.id = AD.markedBy
-            GROUP BY AD.date, AD.markedBy
-            ORDER BY AD.date DESC`
+            LEFT JOIN admins A ON A.id = T.adminId
+            WHERE A.id = ?
+            GROUP BY AD.date, AD.markedBy, T.firstName, T.lastName, T.class, T.section
+            ORDER BY AD.date DESC;`,
+            [id]
         );
 
         // Response
@@ -514,6 +517,8 @@ adminController.getAttendanceReport = asyncHandler(async (req, res) => {
 
         // If Role is ADMIN
         if (role === "ADMIN") {
+            whereConditions.push("A.id = ?");
+            queryParams.push(userId);
             // class filter
             if (studentClass > 0) {
                 whereConditions.push("S.class = ?");
@@ -560,6 +565,7 @@ adminController.getAttendanceReport = asyncHandler(async (req, res) => {
                 ) AS attendancePercentage
             FROM attendance AD
             INNER JOIN students S ON S.id = AD.studentId
+            LEFT JOIN admins A ON A.id = S.adminId
             ${whereClause}
             GROUP BY S.id, S.firstName, S.lastName, S.class, S.section
             ORDER BY studentName ASC;

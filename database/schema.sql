@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `studentAttendanceTracker`;
+CREATE DATABASE `studentAttendanceTracker`;
 
 USE studentAttendanceTracker;
 
@@ -28,7 +28,9 @@ CREATE TABLE admins (
     updatedAt TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     
     adminId INT NULL,
-    
+
+    CONSTRAINT uq_admins_class_section UNIQUE (class, section, adminId),
+  
     CONSTRAINT fk_admins_adminId
         FOREIGN KEY (adminId) REFERENCES admins(id)
 );
@@ -49,7 +51,7 @@ CREATE TABLE students (
     
     adminId INT NOT NULL,
     
-    CONSTRAINT uq_attendance UNIQUE (registerNumber, adminId),
+    CONSTRAINT uq_students UNIQUE (registerNumber, adminId),
 
     CONSTRAINT fk_students_adminId
         FOREIGN KEY (adminId) REFERENCES admins(id)
