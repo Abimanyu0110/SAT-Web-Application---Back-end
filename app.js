@@ -8,6 +8,7 @@ import adminRoute from "./Route/adminRoute.js";
 import studentRoute from "./Route/studentRoute.js";
 import attendanceRoute from "./Route/attendanceRoute.js";
 
+const PORT = process.env.PORT || 8080;
 
 dotenv.config();
 
@@ -27,8 +28,8 @@ app.use("/api/attendance", attendanceRoute);
 // Backend Start function
 const start = async () => {
     try {
-        server.listen(8080, () => {
-            console.log("Server Port 8080");
+        server.listen(PORT, () => {
+            console.log(`Server Port ${PORT}`);
         });
     } catch (err) {
         console.log(err.message);
